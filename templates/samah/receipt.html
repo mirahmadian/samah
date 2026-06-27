@@ -28,9 +28,9 @@
   <button onclick="window.print()" class="btn btn-outline-primary">
     <i class="bi bi-printer me-2"></i>چاپ رسید ثبت نام
   </button>
-  <button onclick="printCards()" class="btn btn-outline-success">
+  <a href="/samah/card/{{ group.id }}" class="btn btn-outline-success" target="_blank">
     <i class="bi bi-id-card me-2"></i>چاپ کارت شناسایی زائرین
-  </button>
+  </a>
   <a href="/samah/" class="btn btn-outline-secondary ms-auto">
     <i class="bi bi-house me-2"></i>صفحه اصلی
   </a>
@@ -83,6 +83,24 @@
         <div class="text-muted small">تاریخ بازگشت</div>
         <div class="fw-semibold">{{ group.return_date }}</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Insurance document info -->
+<div class="card mb-4">
+  <div class="card-body p-3">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-shield-fill-check text-success fs-4"></i>
+      <h6 class="mb-0 fw-bold">بیمه‌نامه سفر — {{ insurance.insurer_name }}</h6>
+    </div>
+    {% if insurance.terms %}
+    <p class="text-muted small mb-2" style="white-space:pre-line">{{ insurance.terms }}</p>
+    {% endif %}
+    <div class="small">
+      <i class="bi bi-telephone me-1 text-success"></i>
+      مرکز تماس شبانه‌روزی {{ insurance.insurer_name }}:
+      <span class="fw-bold" dir="ltr">{{ insurance.insurer_contact }}</span>
     </div>
   </div>
 </div>

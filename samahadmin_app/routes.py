@@ -97,7 +97,9 @@ def settings():
         keys = [
             'max_group_size', 'insurance_amount', 'max_stay_days',
             'departure_start', 'departure_end', 'arbaeen_date',
-            'registration_open', 'site_message'
+            'registration_open', 'site_message',
+            'insurer_name', 'insurer_contact', 'emergency_number',
+            'insurance_terms', 'card_year', 'card_recommendations',
         ]
         for key in keys:
             val = request.form.get(key, '')
@@ -114,6 +116,12 @@ def settings():
         'arbaeen_date': SystemSetting.get('arbaeen_date', ''),
         'registration_open': SystemSetting.get('registration_open', 'true'),
         'site_message': SystemSetting.get('site_message', ''),
+        'insurer_name': SystemSetting.get('insurer_name', 'بیمه ایران'),
+        'insurer_contact': SystemSetting.get('insurer_contact', '۰۹۶۶۸'),
+        'emergency_number': SystemSetting.get('emergency_number', '۱۲۸'),
+        'insurance_terms': SystemSetting.get('insurance_terms', ''),
+        'card_year': SystemSetting.get('card_year', '۱۴۰۵'),
+        'card_recommendations': SystemSetting.get('card_recommendations', ''),
     }
     return render_template('settings.html', s=settings_data)
 

@@ -47,6 +47,33 @@
           <textarea name="site_message" class="form-control" rows="2" placeholder="این پیام در صفحه اصلی سامانه نمایش داده می‌شود">{{ s.site_message }}</textarea>
         </div>
 
+        <div class="col-12"><h5 class="text-success fw-bold border-bottom pb-2 mt-2"><i class="bi bi-shield-fill-check me-2"></i>شرکت بیمه‌گر و کارت شناسایی</h5></div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">نام شرکت بیمه‌گر</label>
+          <input type="text" name="insurer_name" class="form-control" value="{{ s.insurer_name }}" placeholder="بیمه ایران">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">مرکز تماس شبانه‌روزی بیمه</label>
+          <input type="text" name="insurer_contact" class="form-control" value="{{ s.insurer_contact }}" placeholder="۰۹۶۶۸" dir="ltr">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">شماره اضطراری</label>
+          <input type="text" name="emergency_number" class="form-control" value="{{ s.emergency_number }}" placeholder="۱۲۸" dir="ltr">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">سال روی کارت</label>
+          <input type="text" name="card_year" class="form-control" value="{{ s.card_year }}" placeholder="۱۴۰۵">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">تعهدات و شرایط بیمه (نمایش به زائر و در رسید)</label>
+          <textarea name="insurance_terms" class="form-control" rows="3">{{ s.insurance_terms }}</textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">توصیه‌های مهم پشت کارت شناسایی</label>
+          <textarea name="card_recommendations" class="form-control" rows="6">{{ s.card_recommendations }}</textarea>
+          <div class="form-text">هر خط یک توصیه — این موارد پشت کارت شناسایی زائر چاپ می‌شوند.</div>
+        </div>
+
         <div class="col-12">
           <button type="submit" class="btn btn-success px-5 fw-bold">
             <i class="bi bi-save me-2"></i>ذخیره تنظیمات

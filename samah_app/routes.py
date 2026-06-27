@@ -550,7 +550,43 @@ def receipt(group_id):
         qr_codes = json.loads(m.qr_code_path or '[]')
         members_with_qr.append((m, qr_codes))
 
-    return render_template('receipt.html', group=group, members=members_with_qr, plates=plates)
+    insurance_info = {
+        'insurer_name': SystemSetting.get('insurer_name', 'بیمه ایران'),
+        'insurer_contact': SystemSetting.get('insurer_contact', '۰۹۶۶۸'),
+        'terms': SystemSetting.get('insurance_terms', ''),
+    }
+
+    return render_template('receipt.html', group=group, members=members_with_qr,
+                           plates=plates, insurance=insurance_info)
+
+
+@samah_bp.route('/card/<int:group_id>')
+@require_auth
+def pilgrim_card(group_id):
+    """Printable pilgrim ID cards (کارت شناسایی زائرین) — official 1405 design."""
+    group = PilgrimGroup.query.get_or_404(group_id)
+    members = Pilgrim.query.filter_by(group_id=group.id).all()
+
+    head = next((m for m in members if m.is_group_head), members[0] if members else None)
+
+    members_with_qr = []
+    for m in members:
+        qr_codes = json.loads(m.qr_code_path or '[]')
+        members_with_qr.append((m, qr_codes[0] if qr_codes else None))
+
+    recs_raw = SystemSetting.get('card_recommendations', '') or ''
+    recommendations = [r.strip() for r in recs_raw.splitlines() if r.strip()]
+
+    card_info = {
+        'year': SystemSetting.get('card_year', '۱۴۰۵'),
+        'insurer_name': SystemSetting.get('insurer_name', 'بیمه ایران'),
+        'insurer_contact': SystemSetting.get('insurer_contact', '۰۹۶۶۸'),
+        'emergency_number': SystemSetting.get('emergency_number', '۱۲۸'),
+        'recommendations': recommendations,
+    }
+
+    return render_template('card.html', group=group, members=members_with_qr,
+                           head=head, card=card_info)
 
 
 # ── API: Civil Registry Lookup ──

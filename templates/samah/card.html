@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>کارت شناسایی زائرین اربعین {{ card.year }} - سماح</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Vazirmatn', Tahoma, sans-serif; background: #eef1f6; margin: 0; padding: 20px; }
+    .toolbar { max-width: 920px; margin: 0 auto 18px; display: flex; gap: 10px; }
+    .btn { font-family: inherit; font-size: 14px; padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-print { background: #1a6b3c; color: #fff; }
+    .btn-back { background: #fff; color: #444; border: 1px solid #ccc; }
+
+    .cards-wrap { max-width: 920px; margin: 0 auto; }
+    .card-pair {
+      display: flex; gap: 14px; justify-content: center; margin-bottom: 22px;
+      page-break-inside: avoid;
+    }
+    .card-side {
+      width: 420px; height: 300px; background: #fff; border-radius: 18px;
+      border: 2px solid #d7dbe0; position: relative; overflow: hidden;
+      box-shadow: 0 3px 14px rgba(0,0,0,.08);
+    }
+
+    /* ---- FRONT ---- */
+    .front { background: linear-gradient(135deg, #fbfdfb 0%, #eef6ef 100%); }
+    .front .flag-strip {
+      position: absolute; top: 0; left: 0; width: 130px; height: 14px;
+      background: linear-gradient(to bottom, #239f40 33%, #fff 33%, #fff 66%, #da0000 66%);
+      border-bottom-left-radius: 4px;
+    }
+    .front .logo-arbaeen { position: absolute; top: 14px; left: 14px; width: 64px; opacity: .92; }
+    .front .photo-box {
+      position: absolute; top: 20px; right: 18px; width: 92px; height: 110px;
+      border: 2px dashed #2a8f52; border-radius: 6px; display: flex; align-items: center;
+      justify-content: center; text-align: center; font-size: 12px; color: #2a8f52; line-height: 1.6;
+      background: rgba(255,255,255,.6);
+    }
+    .front .card-title {
+      position: absolute; top: 96px; left: 18px; text-align: left; direction: rtl;
+      font-size: 17px; font-weight: 800; color: #1a3c28; width: 220px;
+    }
+    .front .fields { position: absolute; top: 140px; right: 18px; left: 18px; }
+    .front .field-row { display: flex; align-items: center; margin-bottom: 9px; gap: 8px; }
+    .front .field-label { font-size: 12.5px; font-weight: 700; color: #1a3c28; white-space: nowrap; min-width: 96px; }
+    .front .field-value {
+      flex: 1; border: 1px solid #b9d3c2; background: #f3f9f5; border-radius: 6px;
+      height: 26px; display: flex; align-items: center; padding: 0 8px; font-size: 12.5px; font-weight: 600; color: #222;
+    }
+    .front .qr-area { position: absolute; bottom: 12px; right: 22px; text-align: center; }
+    .front .qr-area img { width: 78px; height: 78px; border: 3px solid #fff; border-radius: 8px; box-shadow: 0 0 0 1px #cdd; background:#fff; }
+    .front .qr-area .scan { font-size: 11px; font-weight: 700; color: #1a3c28; margin-top: 2px; }
+    .front .watermark {
+      position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; color: #9aa; letter-spacing: 1px;
+    }
+
+    /* ---- BACK ---- */
+    .back { background: #fff; padding: 14px 16px; }
+    .back .back-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .back .back-head .ins { background: #143d8a; color: #fff; font-weight: 700; font-size: 12px; padding: 5px 12px; border-radius: 6px; }
+    .back .back-head .org { font-size: 11px; color: #2a8f52; font-weight: 700; }
+    .back .back-title {
+      text-align: center; font-size: 13.5px; font-weight: 800; color: #8a6d1f;
+      border-top: 1px solid #e0c97a; border-bottom: 1px solid #e0c97a; padding: 4px 0; margin: 4px 0 8px;
+    }
+    .back ul { list-style: none; margin: 0; padding: 0; }
+    .back li {
+      font-size: 10.5px; color: #333; line-height: 1.5; padding: 3px 0;
+      border-bottom: 1px dotted #ddd; display: flex; gap: 6px; align-items: flex-start;
+    }
+    .back li i { color: #1a6b3c; font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+    .back .contact-box {
+      margin-top: 8px; border: 1.5px solid #333; border-radius: 8px; text-align: center;
+      padding: 6px; font-weight: 800; font-size: 13px; color: #111;
+    }
+    .back .contact-box .num { font-size: 16px; letter-spacing: 1px; direction: ltr; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .toolbar { display: none; }
+      .card-side { box-shadow: none; }
+      .card-pair { margin: 0 0 10mm; }
+      @page { size: A4; margin: 12mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn btn-print" onclick="window.print()"><i class="bi bi-printer"></i> چاپ کارت‌ها</button>
+  <a class="btn btn-back" href="/samah/receipt/{{ group.id }}"><i class="bi bi-arrow-right"></i> بازگشت به رسید</a>
+</div>
+
+<div class="cards-wrap">
+  {% for pilgrim, qr in members %}
+  <div class="card-pair">
+
+    <!-- FRONT -->
+    <div class="card-side front">
+      <div class="flag-strip"></div>
+      <div class="photo-box">محل<br>الصاق<br>عکس</div>
+      <div class="card-title">کارت شناسایی زائرین اربعین {{ card.year }}</div>
+      <div class="fields">
+        <div class="field-row">
+          <span class="field-label">نام و نام خانوادگی:</span>
+          <span class="field-value">{{ pilgrim.full_name }}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">نام پدر:</span>
+          <span class="field-value">{{ pilgrim.father_name or '' }}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">کدملی:</span>
+          <span class="field-value" dir="ltr" style="justify-content:flex-end">{{ pilgrim.national_id }}</span>
+        </div>
+        <div class="field-row">
+          <span class="field-label">تلفن همراه:</span>
+          <span class="field-value" dir="ltr" style="justify-content:flex-end">{{ pilgrim.phone or '' }}</span>
+        </div>
+      </div>
+      <div class="qr-area">
+        {% if qr %}<img src="{{ qr }}" alt="QR">{% endif %}
+        <div class="scan">اسکن کنید</div>
+      </div>
+      <div class="watermark">samah.haj.ir</div>
+    </div>
+
+    <!-- BACK -->
+    <div class="card-side back">
+      <div class="back-head">
+        <span class="ins">{{ card.insurer_name }}</span>
+        <span class="org">ستاد مرکزی اربعین</span>
+      </div>
+      <div class="back-title">توصیه‌های مهم برای زائرین</div>
+      <ul>
+        {% for rec in card.recommendations %}
+        <li><i class="bi bi-check-circle-fill"></i><span>{{ rec }}</span></li>
+        {% endfor %}
+      </ul>
+      <div class="contact-box">
+        مرکز تماس شبانه‌روزی {{ card.insurer_name }}
+        <div class="num">{{ card.insurer_contact }}</div>
+      </div>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+
+</body>
+</html>
