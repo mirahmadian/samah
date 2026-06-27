@@ -33,7 +33,7 @@ def superadmin_required(f):
 
 # ── Auth ──
 
-@admin_bp.route('/')
+@admin_bp.route('/', methods=['GET', 'POST'])
 @admin_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('admin_logged_in'):
