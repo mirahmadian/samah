@@ -7,7 +7,7 @@ from datetime import datetime, date
 
 import qrcode
 from flask import (render_template, request, session, redirect, url_for,
-                   flash, jsonify, send_file, current_app)
+                   flash, jsonify, send_file, send_from_directory, current_app)
 
 from models import db, Pilgrim, PilgrimGroup, Border, SystemSetting, TrafficHistory, AnnualRegistration
 from . import samah_bp
@@ -108,9 +108,34 @@ def generate_qr_codes(pilgrim, group):
 # Routes
 # ──────────────────────────────────────────────
 
+def _landing_dir():
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'landing')
+
+
 @samah_bp.route('/')
 def index():
+    # Serve the official mirrored landing page (static/landing/index.html)
+    # if it has been downloaded; otherwise fall back to the built-in page.
+    index_path = os.path.join(_landing_dir(), 'index.html')
+    if os.path.exists(index_path):
+        return send_from_directory(_landing_dir(), 'index.html')
     return render_template('landing.html')
+
+
+@samah_bp.route('/assets/<path:filename>')
+def landing_assets(filename):
+    """Serve the official landing page's static assets (css/js/images/pdf)."""
+    return send_from_directory(os.path.join(_landing_dir(), 'assets'), filename)
+
+
+@samah_bp.route('/manifest.json')
+def landing_manifest():
+    return send_from_directory(_landing_dir(), 'manifest.json')
+
+
+@samah_bp.route('/icon-128x128.png')
+def landing_favicon():
+    return send_from_directory(_landing_dir(), 'icon-128x128.png')
 
 
 @samah_bp.route('/login', methods=['GET', 'POST'])

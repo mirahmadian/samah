@@ -8,3 +8,6 @@ samah.db
 static/qrcodes/*.png
 static/uploads/
 *.log
+
+# Mirrored official landing page (downloaded on server)
+static/landing/
