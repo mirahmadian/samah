@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}داشبورد - پنل مدیریت سماح{% endblock %}
+{% block page_title %}داشبورد{% endblock %}
+{% block content %}
+
+<!-- Stats -->
+<div class="row g-4 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#e8f5e9"><i class="bi bi-people-fill text-success"></i></div>
+        <div>
+          <div class="text-muted small">کل گروه‌ها</div>
+          <div class="fw-bold fs-4">{{ '{:,}'.format(total_groups) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#e3f2fd"><i class="bi bi-person-check-fill text-primary"></i></div>
+        <div>
+          <div class="text-muted small">کل زائرین</div>
+          <div class="fw-bold fs-4">{{ '{:,}'.format(total_pilgrims) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#fff3e0"><i class="bi bi-currency-exchange" style="color:#e65100"></i></div>
+        <div>
+          <div class="text-muted small">درآمد کل (ریال)</div>
+          <div class="fw-bold fs-5">{{ '{:,}'.format(total_revenue) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="stat-icon" style="background:#fce4ec"><i class="bi bi-clock-history text-danger"></i></div>
+        <div>
+          <div class="text-muted small">در انتظار</div>
+          <div class="fw-bold fs-4">{{ '{:,}'.format(0) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Recent registrations -->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold mb-0">آخرین ثبت نام‌ها</h6>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
+                <th class="px-3">کد گروه</th>
+                <th>سرگروه</th>
+                <th>مرز</th>
+                <th>اعزام</th>
+                <th>تعداد</th>
+                <th>وضعیت</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for g in recent_groups %}
+              <tr>
+                <td class="px-3 fw-bold" dir="ltr">{{ g.group_code }}</td>
+                <td>{{ g.head.full_name if g.head else '—' }}</td>
+                <td>{{ g.exit_border.name_fa if g.exit_border else '—' }}</td>
+                <td>{{ g.departure_date or '—' }}</td>
+                <td><span class="badge bg-secondary">{{ g.members|length }} نفر</span></td>
+                <td>
+                  {% if g.status == 'paid' %}<span class="badge bg-success">پرداخت شده</span>
+                  {% elif g.status == 'pending_payment' %}<span class="badge bg-warning text-dark">در انتظار پرداخت</span>
+                  {% else %}<span class="badge bg-secondary">پیش‌نویس</span>{% endif %}
+                </td>
+                <td><a href="/samahadmin/registrations/{{ g.id }}" class="btn btn-sm btn-outline-primary">جزئیات</a></td>
+              </tr>
+              {% else %}
+              <tr><td colspan="7" class="text-center text-muted py-4">ثبت نامی یافت نشد</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Border distribution -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold mb-0">توزیع مرزها</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="borderChart" height="200"></canvas>
+        {% if not border_stats %}
+        <div class="text-center text-muted py-4">داده‌ای موجود نیست</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if border_stats %}
+new Chart(document.getElementById('borderChart'), {
+  type: 'doughnut',
+  data: {
+    labels: [{% for name, cnt in border_stats %}'{{ name }}',{% endfor %}],
+    datasets: [{
+      data: [{% for name, cnt in border_stats %}{{ cnt }},{% endfor %}],
+      backgroundColor: ['#1a6b3c','#2a8f52','#c9963a','#e74c3c','#3498db','#9b59b6','#e67e22','#1abc9c'],
+    }]
+  },
+  options: { plugins: { legend: { position: 'bottom', labels: { font: { family: 'Vazirmatn' } } } } }
+});
+{% endif %}
+</script>
+{% endblock %}

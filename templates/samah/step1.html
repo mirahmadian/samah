@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% from "step_wizard.html" import wizard %}
+{% block title %}ثبت اطلاعات گروه - سماح{% endblock %}
+{% block content %}
+{{ wizard(1) }}
+
+<div class="card mb-4">
+  <div class="card-header card-header-green">
+    <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>ثبت اطلاعات گروه</h5>
+  </div>
+  <div class="card-body p-4">
+    <!-- Info notice -->
+    <div class="alert alert-info border-0 d-flex align-items-start gap-2 mb-4" style="background:#e3f2fd">
+      <i class="bi bi-info-circle-fill mt-1 flex-shrink-0" style="color:#0d6efd"></i>
+      <div>
+        <strong>راهنما:</strong> اطلاعات هویتی (نام، نام خانوادگی، نام پدر، شماره شناسنامه) به صورت خودکار از سامانه ثبت احوال واکشی می‌شود.
+        پس از وارد کردن کد ملی و تاریخ تولد روی «استعلام» کلیک کنید.
+      </div>
+    </div>
+    {% if members|length >= max_group %}
+    <div class="alert alert-warning"><i class="bi bi-people me-2"></i>به حداکثر تعداد اعضای گروه ({{ max_group }} نفر) رسیده‌اید.</div>
+    {% else %}
+    <!-- Add member form -->
+    <form method="post" id="addMemberForm">
+      <input type="hidden" name="action" value="add_member">
+      <div class="card border border-success-subtle mb-4">
+        <div class="card-header bg-success bg-opacity-10">
+          <h6 class="mb-0 text-success"><i class="bi bi-person-plus me-2"></i>
+            {% if not is_head_registered %}افزودن سرگروه{% else %}افزودن عضو جدید{% endif %}
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- National ID + Birth Date -->
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">کد ملی <span class="text-danger">*</span></label>
+              {% if not is_head_registered %}
+              <input type="text" class="form-control" name="national_id" id="inp_nid"
+                     value="{{ national_id }}" readonly style="background:#f8f9fa">
+              {% else %}
+              <input type="text" class="form-control" name="national_id" id="inp_nid"
+                     placeholder="کد ملی عضو" maxlength="10" dir="ltr">
+              {% endif %}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">تاریخ تولد شمسی <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="birth_date" id="inp_birth"
+                     placeholder="مثال: ۱۳۶۰/۰۱/۱۵">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button type="button" class="btn btn-outline-primary w-100" onclick="lookupCivil()">
+                <i class="bi bi-search me-1"></i>استعلام
+              </button>
+            </div>
+
+            <!-- Civil Registry Result (read-only) -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">نام و نام خانوادگی</label>
+              <input type="text" class="form-control" id="inp_fullname" placeholder="از ثبت احوال واکشی می‌شود" readonly style="background:#f8f9fa">
+              <input type="hidden" name="first_name" id="hid_fname">
+              <input type="hidden" name="last_name" id="hid_lname">
+              <input type="hidden" name="father_name" id="hid_father">
+              <input type="hidden" name="id_number" id="hid_idnum">
+              <input type="hidden" name="gender" id="hid_gender">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-semibold">نام پدر</label>
+              <input type="text" class="form-control" id="inp_father" readonly style="background:#f8f9fa">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-semibold">شماره شناسنامه</label>
+              <input type="text" class="form-control" id="inp_idnum" readonly style="background:#f8f9fa">
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">تلفن همراه <span class="text-danger">*</span></label>
+              {% if not is_head_registered %}
+              <input type="text" class="form-control" name="phone" value="{{ phone }}" readonly style="background:#f8f9fa" dir="ltr">
+              {% else %}
+              <input type="text" class="form-control" name="phone" placeholder="09XXXXXXXXX" dir="ltr">
+              {% endif %}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">تلفن همراه ضروری <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="emergency_phone" placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹" dir="ltr">
+            </div>
+
+            <!-- Passport -->
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">شماره گذرنامه</label>
+              <input type="text" class="form-control" name="passport_number" placeholder="۹۳۴۵۴۱۲۳۴" dir="ltr">
+            </div>
+            <div class="col-md-1">
+              <label class="form-label fw-semibold">حرف</label>
+              <select class="form-select" name="passport_letter" dir="ltr">
+                <option value="">D :</option>
+                {% for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-semibold">تاریخ انقضا (میلادی)</label>
+              <input type="date" class="form-control" name="passport_expiry" dir="ltr">
+            </div>
+
+            <!-- Disease -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">آیا بیماری خاصی دارید؟</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="has_disease" value="no" checked id="dis_no" onchange="toggleDiseases(false)">
+                  <label class="form-check-label" for="dis_no">خیر</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="has_disease" value="yes" id="dis_yes" onchange="toggleDiseases(true)">
+                  <label class="form-check-label" for="dis_yes">بله</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Disease checkboxes -->
+            <div class="col-12" id="diseasePanel" style="display:none">
+              <div class="card border-warning bg-warning bg-opacity-10 p-3">
+                <p class="text-warning-emphasis fw-semibold mb-2">
+                  <i class="bi bi-heart-pulse me-1"></i>چنانچه بیماری خاصی دارید لطفاً مشخص نمایید (بیش از یک گزینه قابل انتخاب است)
+                </p>
+                <div class="row g-2" id="diseaseCheckboxes">
+                  <!-- filled by JS based on gender -->
+                </div>
+                <input type="hidden" name="diseases" id="hid_diseases" value="[]">
+              </div>
+            </div>
+
+            {% if not is_head_registered %}
+            <!-- Address fields (only for head/first member) -->
+            <div class="col-12"><hr><h6 class="text-muted"><i class="bi bi-geo-alt me-1"></i>اطلاعات محل سکونت (سرگروه)</h6></div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">استان <span class="text-danger">*</span></label>
+              <select class="form-select" name="province" required>
+                <option value="">انتخاب استان</option>
+                {% for p in provinces %}
+                <option value="{{ p }}">{{ p }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">شهر <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" name="city" placeholder="نام شهر" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">تلفن ثابت</label>
+              <input type="text" class="form-control" name="phone_landline" placeholder="کد شهر + شماره" dir="ltr">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold">کد پستی</label>
+              <input type="text" class="form-control" name="postal_code" placeholder="۱۰ رقم" maxlength="10" dir="ltr">
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">آدرس</label>
+              <textarea class="form-control" name="address" rows="2" placeholder="آدرس کامل"></textarea>
+            </div>
+            {% endif %}
+
+            <!-- Services info -->
+            <div class="col-12">
+              <div class="alert alert-success border-0 d-flex align-items-center gap-3 mb-0" style="background:#e8f5e9">
+                <i class="bi bi-shield-fill-check fs-4 text-success"></i>
+                <div>
+                  <div class="fw-semibold">خدمت بیمه سفر (اجباری)</div>
+                  <div class="small text-muted">هزینه بیمه هر زائر: {{ '{:,}'.format(insurance_amount) }} ریال — این خدمت برای تمام زائرین الزامی است.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-person-check me-2"></i>ثبت اطلاعات
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    {% endif %}
+
+    <!-- Members table -->
+    {% if members %}
+    <div class="table-responsive mt-4">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>سرگروه</th>
+            <th>نام و نام خانوادگی</th>
+            <th>نام پدر</th>
+            <th>شماره شناسنامه</th>
+            <th>تاریخ تولد</th>
+            <th>کد ملی</th>
+            <th>تلفن همراه</th>
+            <th>تلفن ضروری</th>
+            <th>ویرایش</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+          <tr class="{{ 'table-success' if m.is_group_head else '' }}">
+            <td class="text-center">
+              {% if m.is_group_head %}
+              <i class="bi bi-check-circle-fill text-success fs-5"></i>
+              {% else %}
+              <form method="post" style="display:inline">
+                <input type="hidden" name="action" value="set_head">
+                <input type="hidden" name="member_id" value="{{ m.id }}">
+                <button class="btn btn-sm btn-outline-secondary" title="تعیین به عنوان سرگروه" type="submit">
+                  <i class="bi bi-star"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+            <td class="fw-semibold">{{ m.full_name }}</td>
+            <td>{{ m.father_name or '—' }}</td>
+            <td>{{ m.id_number or '—' }}</td>
+            <td>{{ m.birth_date }}</td>
+            <td dir="ltr">{{ m.national_id }}</td>
+            <td dir="ltr">{{ m.phone }}</td>
+            <td dir="ltr">{{ m.emergency_phone }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary" onclick="openEditModal({{ m.id }}, '{{ m.passport_number }}', '{{ m.passport_letter }}', '{{ m.passport_expiry }}', '{{ m.emergency_phone }}', {{ m.has_disease|tojson }}, {{ m.diseases or '[]' }}, '{{ m.gender }}')">
+                <i class="bi bi-pencil"></i>
+              </button>
+            </td>
+            <td>
+              {% if not m.is_group_head or members|length == 1 %}
+              <form method="post" onsubmit="return confirm('آیا مطمئن هستید؟')">
+                <input type="hidden" name="action" value="delete_member">
+                <input type="hidden" name="member_id" value="{{ m.id }}">
+                <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i></button>
+              </form>
+              {% else %}
+              <button class="btn btn-sm btn-outline-danger" disabled title="برای حذف سرگروه ابتدا سرگروه را تغییر دهید"><i class="bi bi-trash"></i></button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <div class="d-flex justify-content-between mt-4">
+      <a href="/samah/" class="btn btn-outline-danger px-4">
+        <i class="bi bi-box-arrow-right me-2"></i>خروج
+      </a>
+      {% if members %}
+      <form method="post">
+        <input type="hidden" name="action" value="next">
+        <button type="submit" class="btn btn-success px-5 fw-bold">
+          ادامه <i class="bi bi-arrow-left me-2"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header card-header-green">
+        <h5 class="modal-title text-white"><i class="bi bi-pencil me-2"></i>ویرایش اطلاعات عضو</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" id="editForm">
+        <input type="hidden" name="action" value="edit_member">
+        <input type="hidden" name="member_id" id="edit_member_id">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">شماره گذرنامه</label>
+              <input type="text" class="form-control" name="passport_number" id="edit_passport_num" dir="ltr">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">حرف</label>
+              <select class="form-select" name="passport_letter" id="edit_passport_letter" dir="ltr">
+                {% for c in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
+                <option value="{{ c }}">{{ c }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">تاریخ انقضا (میلادی)</label>
+              <input type="date" class="form-control" name="passport_expiry" id="edit_passport_exp" dir="ltr">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">تلفن ضروری</label>
+              <input type="text" class="form-control" name="emergency_phone" id="edit_emergency" dir="ltr">
+            </div>
+            <div class="col-12">
+              <label class="form-label">آیا بیماری خاصی دارید؟</label>
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="has_disease" value="no" id="edit_dis_no" onchange="toggleEditDiseases(false)">
+                  <label class="form-check-label" for="edit_dis_no">خیر</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="has_disease" value="yes" id="edit_dis_yes" onchange="toggleEditDiseases(true)">
+                  <label class="form-check-label" for="edit_dis_yes">بله</label>
+                </div>
+              </div>
+            </div>
+            <div class="col-12" id="editDiseasePanel" style="display:none">
+              <div class="card border-warning bg-warning bg-opacity-10 p-3">
+                <div class="row g-2" id="editDiseaseCheckboxes"></div>
+                <input type="hidden" name="diseases" id="edit_hid_diseases" value="[]">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+          <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const DISEASES_ALL = [
+  {id:'diabetes', label:'دیابت', genders:['male','female']},
+  {id:'diabetic_foot', label:'عارضه پای دیابتی', genders:['male','female']},
+  {id:'cardiac', label:'بیماری قلبی و عروقی', genders:['male','female']},
+  {id:'respiratory', label:'بیماری تنفسی', genders:['male','female']},
+  {id:'epilepsy', label:'صرع', genders:['male','female']},
+  {id:'allergy', label:'آلرژی', genders:['male','female']},
+  {id:'musculoskeletal', label:'بیماری عضلانی - اسکلتی', genders:['male','female']},
+  {id:'stroke', label:'سابقه سکته مغزی', genders:['male','female']},
+  {id:'pregnancy', label:'بارداری (در حال حاضر)', genders:['female']},
+  {id:'mental', label:'سابقه اختلال روانی', genders:['male','female']},
+  {id:'digestive', label:'مشکلات گوارشی', genders:['male','female']},
+  {id:'kidney', label:'مشکلات کلیوی', genders:['male','female']},
+  {id:'infectious', label:'بیماری‌های عفونی', genders:['male','female']},
+  {id:'special', label:'بیماری‌های خاص', genders:['male','female']},
+];
+
+let currentGender = 'male';
+
+function getDiseaseCheckboxesHtml(containerId, selectedIds, gender) {
+  const applicable = DISEASES_ALL.filter(d => d.genders.includes(gender));
+  let html = '';
+  applicable.forEach(d => {
+    const checked = selectedIds.includes(d.id) ? 'checked' : '';
+    html += `<div class="col-md-6 col-sm-6">
+      <div class="form-check">
+        <input class="form-check-input disease-cb" type="checkbox" id="${containerId}_${d.id}" value="${d.id}" data-container="${containerId}" ${checked}>
+        <label class="form-check-label" for="${containerId}_${d.id}">${d.label}</label>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+function updateDiseaseHidden(containerId, hiddenId) {
+  const checked = [...document.querySelectorAll(`#${containerId} .disease-cb:checked`)].map(cb => cb.value);
+  document.getElementById(hiddenId).value = JSON.stringify(checked);
+}
+
+function toggleDiseases(show) {
+  document.getElementById('diseasePanel').style.display = show ? '' : 'none';
+  if (show) {
+    document.getElementById('diseaseCheckboxes').innerHTML = getDiseaseCheckboxesHtml('diseaseCheckboxes', [], currentGender);
+    document.getElementById('diseaseCheckboxes').addEventListener('change', () => updateDiseaseHidden('diseaseCheckboxes', 'hid_diseases'));
+  }
+}
+
+function toggleEditDiseases(show) {
+  document.getElementById('editDiseasePanel').style.display = show ? '' : 'none';
+}
+
+async function lookupCivil() {
+  const nid = document.getElementById('inp_nid').value.trim();
+  const birth = document.getElementById('inp_birth').value.trim();
+  if (!nid || !birth) { alert('کد ملی و تاریخ تولد را وارد کنید'); return; }
+  try {
+    const r = await fetch('/samah/api/lookup', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({national_id: nid, birth_date: birth})
+    });
+    const data = await r.json();
+    if (data.success) {
+      document.getElementById('inp_fullname').value = data.data.first_name + ' ' + data.data.last_name;
+      document.getElementById('inp_father').value = data.data.father_name;
+      document.getElementById('inp_idnum').value = data.data.id_number;
+      document.getElementById('hid_fname').value = data.data.first_name;
+      document.getElementById('hid_lname').value = data.data.last_name;
+      document.getElementById('hid_father').value = data.data.father_name;
+      document.getElementById('hid_idnum').value = data.data.id_number;
+      document.getElementById('hid_gender').value = data.data.gender;
+      currentGender = data.data.gender;
+    } else {
+      alert(data.error || 'خطا در استعلام');
+    }
+  } catch(e) { alert('خطا در ارتباط با سرور'); }
+}
+
+function openEditModal(id, passNum, passLetter, passExp, emPhone, hasDisease, diseases, gender) {
+  document.getElementById('edit_member_id').value = id;
+  document.getElementById('edit_passport_num').value = passNum;
+  document.getElementById('edit_passport_letter').value = passLetter;
+  document.getElementById('edit_passport_exp').value = passExp;
+  document.getElementById('edit_emergency').value = emPhone;
+  document.getElementById(hasDisease ? 'edit_dis_yes' : 'edit_dis_no').checked = true;
+  const panel = document.getElementById('editDiseasePanel');
+  panel.style.display = hasDisease ? '' : 'none';
+  if (hasDisease) {
+    document.getElementById('editDiseaseCheckboxes').innerHTML = getDiseaseCheckboxesHtml('editDiseaseCheckboxes', diseases, gender);
+    document.getElementById('editDiseaseCheckboxes').addEventListener('change', () => updateDiseaseHidden('editDiseaseCheckboxes', 'edit_hid_diseases'));
+    document.getElementById('edit_hid_diseases').value = JSON.stringify(diseases);
+  }
+  new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+</script>
+{% endblock %}

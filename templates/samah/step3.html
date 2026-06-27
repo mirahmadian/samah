@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% from "step_wizard.html" import wizard %}
+{% block title %}انتخاب وسیله نقلیه - سماح{% endblock %}
+{% block extra_css %}
+.transport-chip { cursor:pointer; padding:10px 20px; border-radius:25px; border:2px solid #ddd; background:#fff; transition:all .2s; display:inline-flex; align-items:center; gap:8px; font-size:14px; }
+.transport-chip:hover { border-color:#1a6b3c; color:#1a6b3c; }
+.transport-chip.selected { background:#1a6b3c; color:#fff; border-color:#1a6b3c; }
+.transport-chip .check { display:none; }
+.transport-chip.selected .check { display:inline; }
+{% endblock %}
+{% block content %}
+{{ wizard(3) }}
+
+<div class="card mb-4">
+  <div class="card-header card-header-green">
+    <h5 class="mb-0"><i class="bi bi-truck me-2"></i>انتخاب وسیله نقلیه تا مرز</h5>
+  </div>
+  <div class="card-body p-4">
+
+    <!-- Trip info summary -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="bg-light rounded-3 p-3 h-100">
+          <div class="fw-bold mb-2 text-muted small">اطلاعات تردد</div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">مرز خروجی:</span>
+            <span class="fw-semibold">{{ group.exit_border.name_fa if group.exit_border else '—' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">مرز ورودی:</span>
+            <span class="fw-semibold">{{ group.entry_border.name_fa if group.entry_border else '—' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">تاریخ خروج (اعزام):</span>
+            <span class="fw-semibold">{{ group.departure_date }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">تاریخ ورود (بازگشت):</span>
+            <span class="fw-semibold">{{ group.return_date }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info border-0 mb-4" style="background:#e3f2fd; font-size:13px">
+      <i class="bi bi-info-circle me-1"></i>
+      در صورت سفر با خودروی شخصی نیاز به ثبت تمامی پلاک خودروهای خود دارید.
+    </div>
+
+    <form method="post">
+      <!-- Transport to border -->
+      <div class="mb-4">
+        <label class="form-label fw-bold fs-6">انتخاب وسیله نقلیه عزیمت تا مرز <span class="text-danger">*</span></label>
+        <div class="d-flex flex-wrap gap-2" id="transportToGroup">
+          {% set transports = [('personal','شخصی','bi-car-front-fill'),('bus','اتوبوس','bi-bus-front-fill'),('minibus','مینی بوس','bi-minecart-loaded'),('taxi','تاکسی','bi-taxi-front-fill'),('train','قطار','bi-train-front-fill')] %}
+          {% for val, label, icon in transports %}
+          <label class="transport-chip {{ 'selected' if group.transport_to_border == val else '' }}" for="to_{{ val }}">
+            <input type="radio" name="transport_to_border" id="to_{{ val }}" value="{{ val }}"
+                   {{ 'checked' if group.transport_to_border == val else '' }} class="d-none" required>
+            <i class="{{ icon }} check" ></i>
+            <i class="bi bi-check-circle-fill check me-1"></i>{{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Transport return -->
+      <div class="mb-4">
+        <label class="form-label fw-bold fs-6">انتخاب وسیله نقلیه بازگشت از مرز <span class="text-danger">*</span></label>
+        <div class="d-flex flex-wrap gap-2" id="transportReturnGroup">
+          {% for val, label, icon in transports %}
+          <label class="transport-chip {{ 'selected' if group.transport_return == val else '' }}" for="ret_{{ val }}">
+            <input type="radio" name="transport_return" id="ret_{{ val }}" value="{{ val }}"
+                   {{ 'checked' if group.transport_return == val else '' }} class="d-none" required>
+            <i class="bi bi-check-circle-fill check me-1"></i>{{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Vehicle plates (shown when personal selected) -->
+      <div id="platesSection" style="{{ 'display:none' if group.transport_to_border != 'personal' else '' }}">
+        <div class="card border-primary-subtle mb-4">
+          <div class="card-header bg-primary bg-opacity-10">
+            <h6 class="mb-0"><i class="bi bi-card-text me-2"></i>افزودن پلاک خودروها</h6>
+          </div>
+          <div class="card-body">
+            <div id="platesContainer">
+              {% set plates = group.vehicle_plates | from_json if group.vehicle_plates else [] %}
+              {% for plate in plates %}
+              <div class="plate-row d-flex align-items-center gap-2 mb-2">
+                {{ plate_input(plate) }}
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePlate(this)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPlate()">
+              <i class="bi bi-plus-circle me-1"></i>افزودن پلاک
+            </button>
+            <div class="form-text mt-2">
+              فرمت: ایران — سه رقم راست — حرف وسط — دو رقم چپ &nbsp;|&nbsp; مثال: ایران ۱۲۳ ب ۴۵
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offer ride -->
+      <div class="card border-0 bg-light mb-4 p-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="offer_ride" id="offerRide" role="switch"
+                 {{ 'checked' if group.offer_ride else '' }}>
+          <label class="form-check-label fw-semibold" for="offerRide">
+            با توجه به ظرفیت وسیله نقلیه خود آیا تمایل دارید شخص دیگری را همراه خود تا مرز ببرید؟
+          </label>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="/samah/register/step2" class="btn btn-outline-secondary px-4">
+          <i class="bi bi-arrow-right me-2"></i>بازگشت
+        </a>
+        <button type="submit" class="btn btn-success px-5 fw-bold">
+          ثبت و ادامه <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chip selection
+document.querySelectorAll('#transportToGroup .transport-chip, #transportReturnGroup .transport-chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const container = this.closest('#transportToGroup, #transportReturnGroup');
+    container.querySelectorAll('.transport-chip').forEach(c => c.classList.remove('selected'));
+    this.classList.add('selected');
+    this.querySelector('input').checked = true;
+    if (container.id === 'transportToGroup') {
+      document.getElementById('platesSection').style.display =
+        this.querySelector('input').value === 'personal' ? '' : 'none';
+    }
+  });
+});
+
+function makePlateHtml(val) {
+  const parts = val ? val.split('-') : ['','','',''];
+  return `<div class="plate-row d-flex align-items-center gap-1 mb-2">
+    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHJ4PSI0IiBmaWxsPSIjMDA1NUE1Ii8+PHRleHQgeD0iMTIiIHk9IjE2IiBmb250LXNpemU9IjgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JUkFOPC90ZXh0Pjwvc3ZnPg==" width="28" height="28" style="border-radius:4px">
+    <span class="text-muted small">ایران</span>
+    <input type="text" name="plate[]" class="form-control text-center" style="width:80px;font-size:13px" placeholder="۱۲۳" maxlength="3" dir="ltr">
+    <select name="plate_letter[]" class="form-select" style="width:70px;font-size:13px" dir="ltr">
+      <option>الف</option><option>ب</option><option>پ</option><option>ت</option>
+      <option>ث</option><option>ج</option><option>د</option><option>ذ</option>
+      <option>ر</option><option>ز</option><option>س</option><option>ش</option>
+      <option>ص</option><option>ط</option><option>ع</option><option>ف</option>
+      <option>ق</option><option>ک</option><option>گ</option><option>ل</option>
+      <option>م</option><option>ن</option><option>و</option><option>ه</option>
+      <option>ی</option>
+    </select>
+    <input type="text" name="plate_right[]" class="form-control text-center" style="width:60px;font-size:13px" placeholder="۴۵" maxlength="2" dir="ltr">
+    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removePlate(this)"><i class="bi bi-trash"></i></button>
+  </div>`;
+}
+
+function addPlate() {
+  const c = document.getElementById('platesContainer');
+  c.insertAdjacentHTML('beforeend', makePlateHtml(''));
+}
+
+function removePlate(btn) { btn.closest('.plate-row').remove(); }
+
+// Add one plate row on page load if personal selected and no plates yet
+window.addEventListener('DOMContentLoaded', () => {
+  const isPersonal = document.querySelector('#transportToGroup input[value=personal]:checked');
+  if (isPersonal && document.querySelectorAll('.plate-row').length === 0) {
+    addPlate();
+  }
+});
+</script>
+{% endblock %}

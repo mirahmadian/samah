@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}گزارشات - سماح{% endblock %}
+{% block page_title %}گزارشات آماری{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">توزیع ثبت نام بر اساس مرز</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="borderChart" height="250"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">توزیع وسیله نقلیه</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="transportChart" height="250"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">ثبت نام‌های روزانه</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="dailyChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">توزیع استانی (۱۵ استان برتر)</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="provinceChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const borderData = {{ border_data|safe }};
+const transportData = {{ transport_data|safe }};
+const dailyData = {{ daily_data|safe }};
+const provinceData = {{ province_data|safe }};
+
+const COLORS = ['#1a6b3c','#2a8f52','#c9963a','#e74c3c','#3498db','#9b59b6','#e67e22','#1abc9c','#34495e','#f39c12','#2ecc71','#e91e63','#00bcd4','#ff5722','#607d8b'];
+
+if (borderData.length) {
+  new Chart(document.getElementById('borderChart'), {
+    type: 'pie',
+    data: { labels: borderData.map(d=>d.name), datasets: [{ data: borderData.map(d=>d.count), backgroundColor: COLORS }] },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+if (transportData.length) {
+  new Chart(document.getElementById('transportChart'), {
+    type: 'doughnut',
+    data: { labels: transportData.map(d=>d.name), datasets: [{ data: transportData.map(d=>d.count), backgroundColor: COLORS }] },
+    options: { plugins: { legend: { position: 'bottom' } } }
+  });
+}
+
+if (dailyData.length) {
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: {
+      labels: dailyData.map(d=>d.date),
+      datasets: [{ label:'تعداد ثبت نام', data: dailyData.map(d=>d.count), backgroundColor:'rgba(26,107,60,.1)', borderColor:'#1a6b3c', fill:true, tension:.4 }]
+    },
+    options: { plugins: { legend: { display:false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+if (provinceData.length) {
+  new Chart(document.getElementById('provinceChart'), {
+    type: 'bar',
+    data: {
+      labels: provinceData.map(d=>d.name),
+      datasets: [{ label:'تعداد گروه', data: provinceData.map(d=>d.count), backgroundColor: COLORS[0] }]
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display:false } },
+      scales: { x: { beginAtZero:true } }
+    }
+  });
+}
+</script>
+{% endblock %}

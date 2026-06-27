@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}لیست ثبت نام‌ها - سماح{% endblock %}
+{% block page_title %}لیست ثبت نام‌ها{% endblock %}
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <input type="text" name="q" class="form-control form-control-sm" placeholder="جستجو: نام، کد ملی، کد گروه..." value="{{ q }}">
+      </div>
+      <div class="col-md-2">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="paid" {{ 'selected' if status_filter == 'paid' }}>پرداخت شده</option>
+          <option value="pending_payment" {{ 'selected' if status_filter == 'pending_payment' }}>در انتظار پرداخت</option>
+          <option value="draft" {{ 'selected' if status_filter == 'draft' }}>پیش‌نویس</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="border_id" class="form-select form-select-sm">
+          <option value="">همه مرزها</option>
+          {% for b in borders %}
+          <option value="{{ b.id }}" {{ 'selected' if border_filter == b.id|string }}>{{ b.name_fa }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i class="bi bi-search me-1"></i>جستجو
+        </button>
+        <a href="/samahadmin/registrations" class="btn btn-outline-secondary btn-sm ms-1">پاک کردن</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="px-3">کد گروه</th>
+            <th>سرگروه</th>
+            <th>مرز خروجی</th>
+            <th>اعزام</th>
+            <th>بازگشت</th>
+            <th>تعداد</th>
+            <th>مبلغ</th>
+            <th>وضعیت</th>
+            <th>تاریخ ثبت</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in pagination.items %}
+          <tr>
+            <td class="px-3 fw-bold" dir="ltr">{{ g.group_code }}</td>
+            <td>{{ g.head.full_name if g.head else '—' }}</td>
+            <td>{{ g.exit_border.name_fa if g.exit_border else '—' }}</td>
+            <td>{{ g.departure_date or '—' }}</td>
+            <td>{{ g.return_date or '—' }}</td>
+            <td><span class="badge bg-secondary">{{ g.members|length }}</span></td>
+            <td>{{ '{:,}'.format(g.total_amount) }}</td>
+            <td>
+              {% if g.status == 'paid' %}<span class="badge bg-success">پرداخت شده</span>
+              {% elif g.status == 'pending_payment' %}<span class="badge bg-warning text-dark">در انتظار</span>
+              {% elif g.status == 'cancelled' %}<span class="badge bg-danger">لغو شده</span>
+              {% else %}<span class="badge bg-secondary">پیش‌نویس</span>{% endif %}
+            </td>
+            <td>{{ g.created_at.strftime('%Y/%m/%d') if g.created_at else '—' }}</td>
+            <td>
+              <a href="/samahadmin/registrations/{{ g.id }}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="10" class="text-center py-5 text-muted">ثبت نامی یافت نشد</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if pagination.pages > 1 %}
+  <div class="card-footer bg-white d-flex justify-content-center">
+    <nav><ul class="pagination pagination-sm mb-0">
+      {% for p in pagination.iter_pages() %}
+        {% if p %}
+        <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+          <a class="page-link" href="?page={{ p }}&q={{ q }}&status={{ status_filter }}&border_id={{ border_filter }}">{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+    </ul></nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

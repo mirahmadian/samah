@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}ورود به سامانه سماح{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-lg">
+      <div class="card-header card-header-green text-center py-4">
+        <div style="font-size:2.5rem">🌙</div>
+        <h4 class="mb-0 mt-2">سامانه سماح</h4>
+        <p class="mb-0 opacity-75 small">احراز هویت زائر</p>
+      </div>
+      <div class="card-body p-4">
+        <div class="alert alert-info border-0 mb-4" style="background:#e8f4fd; font-size:13px">
+          <i class="bi bi-info-circle me-1"></i>
+          اطلاعات کد ملی و شماره تلفن باید با سامانه دولت من مطابقت داشته باشد.
+        </div>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">کد ملی <span class="text-danger">*</span></label>
+            <input type="text" name="national_id" class="form-control form-control-lg text-center"
+                   placeholder="۱۰ رقم" maxlength="10" required
+                   style="letter-spacing: 4px; font-size: 1.1rem" dir="ltr">
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">شماره تلفن همراه <span class="text-danger">*</span></label>
+            <input type="tel" name="phone" class="form-control form-control-lg text-center"
+                   placeholder="09XXXXXXXXX" maxlength="11" required
+                   style="letter-spacing: 2px; font-size: 1.1rem" dir="ltr">
+            <div class="form-text">شماره تلفن باید با کد ملی در سامانه احراز هویت یکسان باشد</div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+            <i class="bi bi-box-arrow-in-right me-2"></i>ورود به سامانه
+          </button>
+        </form>
+        <hr class="my-4">
+        <div class="text-center">
+          <a href="/samah/" class="text-muted small"><i class="bi bi-house me-1"></i>بازگشت به صفحه اصلی</a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-3 text-muted small">
+      <i class="bi bi-lock-fill me-1"></i>اتصال امن | سازمان حج و زیارت
+    </div>
+  </div>
+</div>
+{% endblock %}

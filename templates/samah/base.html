@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}سامانه سماح - سازمان حج و زیارت{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a6b3c;
+      --primary-light: #2a8f52;
+      --gold: #c9963a;
+      --bg: #f7f9fc;
+    }
+    body { font-family: 'Vazirmatn', Tahoma, Arial, sans-serif; background: var(--bg); font-size: 14px; }
+    .navbar-samah { background: linear-gradient(135deg, var(--primary), var(--primary-light)); }
+    .navbar-samah .navbar-brand { color: #fff; font-size: 1.3rem; font-weight: 700; }
+    .navbar-samah .nav-link { color: rgba(255,255,255,.85) !important; }
+    .card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
+    .card-header-green { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 12px 12px 0 0 !important; }
+    .btn-primary { background-color: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background-color: var(--primary-light); border-color: var(--primary-light); }
+    .badge-chip {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px;
+      border-radius: 25px; border: 2px solid #ddd; cursor: pointer;
+      font-size: 13px; background: #fff; transition: all .2s; user-select: none;
+    }
+    .badge-chip:hover { border-color: var(--primary); color: var(--primary); }
+    .badge-chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .badge-chip .bi-check-circle-fill { color: #fff; }
+    .step-wizard { display: flex; align-items: center; justify-content: center; padding: 20px 0; position: relative; }
+    .step-item { display: flex; flex-direction: column; align-items: center; position: relative; flex: 1; }
+    .step-item:not(:last-child)::before {
+      content: ''; position: absolute; top: 18px; left: -50%;
+      width: 100%; height: 2px; background: #dee2e6; z-index: 0;
+    }
+    .step-item.done::before { background: var(--primary); }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 700; font-size: 13px; position: relative; z-index: 1;
+      border: 2px solid #dee2e6; background: #fff; color: #6c757d;
+    }
+    .step-item.done .step-circle { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .step-item.active .step-circle { background: var(--gold); border-color: var(--gold); color: #fff; }
+    .step-label { font-size: 11px; margin-top: 4px; color: #6c757d; text-align: center; }
+    .step-item.active .step-label { color: var(--gold); font-weight: 600; }
+    .step-item.done .step-label { color: var(--primary); }
+    .table thead { background-color: #f0f4f0; }
+    .footer-bar { background: var(--primary); color: #fff; text-align: center; padding: 12px; margin-top: 40px; font-size: 12px; }
+    .alert-dismissible { border-radius: 10px; }
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-samah mb-0">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/samah/">
+      <i class="bi bi-moon-stars-fill"></i> سامانه سماح
+    </a>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white-50 small">سازمان حج و زیارت</span>
+      {% if session.get('authenticated') %}
+      <a href="/samah/logout" class="btn btn-sm btn-outline-light">خروج</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+    <div class="alert alert-{{ 'danger' if cat == 'danger' else 'success' if cat == 'success' else 'warning' if cat == 'warning' else 'info' }} alert-dismissible fade show" role="alert">
+      {{ msg }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+<div class="footer-bar">
+  سامانه سماح - سازمان حج و زیارت جمهوری اسلامی ایران &nbsp;|&nbsp; نسخه ۱۴۰۳
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

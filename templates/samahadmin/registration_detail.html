@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}جزئیات ثبت نام - سماح{% endblock %}
+{% block page_title %}جزئیات ثبت نام گروه {{ group.group_code }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between mb-4">
+  <a href="/samahadmin/registrations" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-right me-1"></i>بازگشت به لیست
+  </a>
+  <div class="d-flex gap-2">
+    {% if group.status == 'paid' %}
+    <span class="badge bg-success fs-6">پرداخت شده</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>اطلاعات گروه</h6>
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">کد گروه:</td><td class="fw-semibold" dir="ltr">{{ group.group_code }}</td></tr>
+          <tr><td class="text-muted">استان:</td><td>{{ group.province }}</td></tr>
+          <tr><td class="text-muted">شهر:</td><td>{{ group.city }}</td></tr>
+          <tr><td class="text-muted">کد پستی:</td><td dir="ltr">{{ group.postal_code }}</td></tr>
+          <tr><td class="text-muted">مرز خروجی:</td><td>{{ group.exit_border.name_fa if group.exit_border else '—' }}</td></tr>
+          <tr><td class="text-muted">مرز ورودی:</td><td>{{ group.entry_border.name_fa if group.entry_border else '—' }}</td></tr>
+          <tr><td class="text-muted">تاریخ اعزام:</td><td>{{ group.departure_date }}</td></tr>
+          <tr><td class="text-muted">تاریخ بازگشت:</td><td>{{ group.return_date }}</td></tr>
+          <tr><td class="text-muted">وسیله رفت:</td><td>{{ {'personal':'شخصی','bus':'اتوبوس','minibus':'مینی بوس','taxi':'تاکسی','train':'قطار'}.get(group.transport_to_border,'—') }}</td></tr>
+          <tr><td class="text-muted">وسیله برگشت:</td><td>{{ {'personal':'شخصی','bus':'اتوبوس','minibus':'مینی بوس','taxi':'تاکسی','train':'قطار'}.get(group.transport_return,'—') }}</td></tr>
+          {% if plates %}
+          <tr><td class="text-muted">پلاک(ها):</td><td dir="ltr">{{ plates|join(', ') }}</td></tr>
+          {% endif %}
+          <tr><td class="text-muted">همراه بردن سرنشین:</td><td>{{ 'بله' if group.offer_ride else 'خیر' }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0"><i class="bi bi-credit-card me-2"></i>اطلاعات مالی</h6>
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">مبلغ کل:</td><td class="fw-bold text-success">{{ '{:,}'.format(group.total_amount) }} ریال</td></tr>
+          <tr><td class="text-muted">مرجع پرداخت:</td><td dir="ltr">{{ group.payment_ref or '—' }}</td></tr>
+          <tr><td class="text-muted">تاریخ پرداخت:</td><td>{{ group.payment_date.strftime('%Y/%m/%d %H:%M') if group.payment_date else '—' }}</td></tr>
+          <tr><td class="text-muted">تاریخ ایجاد:</td><td>{{ group.created_at.strftime('%Y/%m/%d %H:%M') if group.created_at else '—' }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Members -->
+<div class="card">
+  <div class="card-header bg-white border-0 pt-3 pb-0">
+    <h6 class="fw-bold">اعضای گروه ({{ members|length }} نفر)</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th class="px-3">سرگروه</th>
+            <th>نام و نام خانوادگی</th>
+            <th>نام پدر</th>
+            <th>کد ملی</th>
+            <th>تاریخ تولد</th>
+            <th>گذرنامه</th>
+            <th>وضعیت</th>
+            <th>شماره ثبت</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td class="px-3 text-center">
+              {% if m.is_group_head %}<i class="bi bi-check-circle-fill text-success"></i>{% endif %}
+            </td>
+            <td class="fw-semibold">{{ m.full_name }}</td>
+            <td>{{ m.father_name }}</td>
+            <td dir="ltr">{{ m.national_id }}</td>
+            <td>{{ m.birth_date }}</td>
+            <td dir="ltr">{{ m.passport_letter }}{{ m.passport_number }}</td>
+            <td>
+              {% if m.payment_status == 'paid' %}<span class="badge bg-success">پرداخت شده</span>
+              {% elif m.payment_status == 'cancelled' %}<span class="badge bg-danger">انصراف</span>
+              {% else %}<span class="badge bg-secondary">در انتظار</span>{% endif %}
+            </td>
+            <td dir="ltr" class="small">{{ m.registration_number }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

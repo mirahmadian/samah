@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}داده‌های ترافیکی - سماح{% endblock %}
+{% block page_title %}مدیریت داده‌های ترافیکی{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">افزودن رکورد ترافیکی</h6>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          <input type="hidden" name="action" value="add">
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label">سال</label>
+              <input type="number" name="year" class="form-control" value="1402">
+            </div>
+            <div class="col-6">
+              <label class="form-label">شماره روز</label>
+              <input type="number" name="day_number" class="form-control" min="1" max="60">
+            </div>
+            <div class="col-12">
+              <label class="form-label">تاریخ شمسی (اختیاری)</label>
+              <input type="text" name="shamsi_date" class="form-control" placeholder="۱۴۰۲/۰۶/۱۵">
+            </div>
+            <div class="col-12">
+              <label class="form-label">تعداد تردد</label>
+              <input type="number" name="count" class="form-control" min="0">
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input type="checkbox" name="is_current_year" class="form-check-input" id="isCurrent">
+                <label class="form-check-label" for="isCurrent">سال جاری</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-success w-100">افزودن</button>
+            </div>
+          </div>
+        </form>
+        <hr>
+        <h6>وارد کردن دسته‌ای (JSON)</h6>
+        <form method="post">
+          <input type="hidden" name="action" value="bulk_import">
+          <textarea name="data_json" class="form-control mb-2" rows="6" placeholder='[{"year":1402,"day":1,"date":"1402/06/01","count":5000,"current":false}]' dir="ltr"></textarea>
+          <button type="submit" class="btn btn-outline-primary w-100 btn-sm">وارد کردن</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header border-0 bg-white pt-3 pb-0">
+        <h6 class="fw-bold">رکوردهای ترافیکی ({{ records|length }} رکورد)</h6>
+      </div>
+      <div class="card-body p-0" style="max-height:500px;overflow-y:auto">
+        <table class="table table-sm table-hover mb-0">
+          <thead class="sticky-top bg-light">
+            <tr>
+              <th class="px-3">سال</th>
+              <th>روز</th>
+              <th>تاریخ شمسی</th>
+              <th>تعداد</th>
+              <th>نوع</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in records %}
+            <tr>
+              <td class="px-3">{{ r.year }}</td>
+              <td>{{ r.day_number }}</td>
+              <td>{{ r.shamsi_date or '—' }}</td>
+              <td>{{ '{:,}'.format(r.count) }}</td>
+              <td>{% if r.is_current_year %}<span class="badge bg-primary">جاری</span>{% else %}<span class="badge bg-secondary">گذشته</span>{% endif %}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">داده‌ای موجود نیست</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

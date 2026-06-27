@@ -1,0 +1,40 @@
+<div class="row g-3">
+  <div class="col-6">
+    <label class="form-label">نام فارسی</label>
+    <input type="text" name="name_fa" class="form-control" required>
+  </div>
+  <div class="col-6">
+    <label class="form-label">نام انگلیسی</label>
+    <input type="text" name="name" class="form-control" dir="ltr" required>
+  </div>
+  <div class="col-6">
+    <label class="form-label">نوع مرز</label>
+    <select name="border_type" class="form-select">
+      <option value="land">زمینی</option>
+      <option value="air">هوایی</option>
+      <option value="sea">دریایی</option>
+    </select>
+  </div>
+  <div class="col-6">
+    <label class="form-label">ظرفیت روزانه</label>
+    <input type="number" name="max_daily_capacity" class="form-control" value="0">
+  </div>
+  <div class="col-4">
+    <label class="form-label">ترتیب نمایش</label>
+    <input type="number" name="display_order" class="form-control" value="0">
+  </div>
+  <div class="col-12">
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" name="is_active" checked>
+      <label class="form-check-label">فعال</label>
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" name="is_exit" checked>
+      <label class="form-check-label">مرز خروجی</label>
+    </div>
+    <div class="form-check form-switch">
+      <input class="form-check-input" type="checkbox" name="is_entry" checked>
+      <label class="form-check-label">مرز ورودی</label>
+    </div>
+  </div>
+</div>

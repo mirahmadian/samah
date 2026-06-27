@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}تنظیمات - پنل مدیریت سماح{% endblock %}
+{% block page_title %}تنظیمات سیستم{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body p-4">
+    <form method="post">
+      <div class="row g-4">
+        <div class="col-12"><h5 class="text-success fw-bold border-bottom pb-2"><i class="bi bi-people me-2"></i>تنظیمات گروه</h5></div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">حداکثر تعداد اعضای گروه</label>
+          <input type="number" name="max_group_size" class="form-control" value="{{ s.max_group_size }}" min="1" max="50">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">حق بیمه هر زائر (ریال)</label>
+          <input type="number" name="insurance_amount" class="form-control" value="{{ s.insurance_amount }}" min="0">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">حداکثر مدت اقامت در عراق (روز)</label>
+          <input type="number" name="max_stay_days" class="form-control" value="{{ s.max_stay_days }}" min="1" max="60">
+        </div>
+
+        <div class="col-12"><h5 class="text-success fw-bold border-bottom pb-2 mt-2"><i class="bi bi-calendar3 me-2"></i>بازه تاریخی</h5></div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">شروع بازه خروج (شمسی)</label>
+          <input type="text" name="departure_start" class="form-control" value="{{ s.departure_start }}" placeholder="۱۴۰۳/۰۶/۰۱">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">پایان بازه خروج (شمسی)</label>
+          <input type="text" name="departure_end" class="form-control" value="{{ s.departure_end }}" placeholder="۱۴۰۳/۰۷/۱۵">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">تاریخ اربعین (شمسی)</label>
+          <input type="text" name="arbaeen_date" class="form-control" value="{{ s.arbaeen_date }}" placeholder="۱۴۰۳/۰۷/۰۱">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">وضعیت ثبت نام</label>
+          <select name="registration_open" class="form-select">
+            <option value="true" {{ 'selected' if s.registration_open == 'true' else '' }}>باز</option>
+            <option value="false" {{ 'selected' if s.registration_open == 'false' else '' }}>بسته</option>
+          </select>
+        </div>
+
+        <div class="col-12"><h5 class="text-success fw-bold border-bottom pb-2 mt-2"><i class="bi bi-megaphone me-2"></i>پیام سراسری</h5></div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">پیام اطلاع‌رسانی به زائرین (اختیاری)</label>
+          <textarea name="site_message" class="form-control" rows="2" placeholder="این پیام در صفحه اصلی سامانه نمایش داده می‌شود">{{ s.site_message }}</textarea>
+        </div>
+
+        <div class="col-12">
+          <button type="submit" class="btn btn-success px-5 fw-bold">
+            <i class="bi bi-save me-2"></i>ذخیره تنظیمات
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

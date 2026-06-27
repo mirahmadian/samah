@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}کاربران ادمین - سماح{% endblock %}
+{% block page_title %}مدیریت کاربران ادمین{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-end mb-4">
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addUserModal">
+    <i class="bi bi-person-plus me-2"></i>افزودن کاربر
+  </button>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="px-3">نام کاربری</th>
+          <th>نام کامل</th>
+          <th>ایمیل</th>
+          <th>نقش</th>
+          <th>آخرین ورود</th>
+          <th>وضعیت</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="px-3 fw-semibold" dir="ltr">{{ u.username }}</td>
+          <td>{{ u.full_name or '—' }}</td>
+          <td dir="ltr">{{ u.email or '—' }}</td>
+          <td>
+            {% if u.role == 'superadmin' %}<span class="badge bg-danger">مدیر ارشد</span>
+            {% elif u.role == 'admin' %}<span class="badge bg-warning text-dark">مدیر</span>
+            {% elif u.role == 'operator' %}<span class="badge bg-primary">اپراتور</span>
+            {% else %}<span class="badge bg-secondary">مشاهده‌گر</span>{% endif %}
+          </td>
+          <td>{{ u.last_login.strftime('%Y/%m/%d %H:%M') if u.last_login else 'هرگز' }}</td>
+          <td>
+            {% if u.is_active %}<span class="badge bg-success">فعال</span>
+            {% else %}<span class="badge bg-danger">غیرفعال</span>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <form method="post" style="display:inline">
+                <input type="hidden" name="action" value="toggle">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if u.is_active else 'btn-outline-success' }}"
+                        {{ 'disabled' if u.id == session.admin_id }}>
+                  <i class="bi {{ 'bi-lock' if u.is_active else 'bi-unlock' }}"></i>
+                </button>
+              </form>
+              <button class="btn btn-sm btn-outline-secondary" onclick="showResetModal({{ u.id }}, '{{ u.username }}')">
+                <i class="bi bi-key"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">افزودن کاربر جدید</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form method="post">
+        <input type="hidden" name="action" value="add">
+        <div class="modal-body row g-3">
+          <div class="col-6">
+            <label class="form-label">نام کاربری <span class="text-danger">*</span></label>
+            <input type="text" name="username" class="form-control" required dir="ltr">
+          </div>
+          <div class="col-6">
+            <label class="form-label">رمز عبور <span class="text-danger">*</span></label>
+            <input type="password" name="password" class="form-control" required dir="ltr">
+          </div>
+          <div class="col-12">
+            <label class="form-label">نام کامل</label>
+            <input type="text" name="full_name" class="form-control">
+          </div>
+          <div class="col-md-7">
+            <label class="form-label">ایمیل</label>
+            <input type="email" name="email" class="form-control" dir="ltr">
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">نقش</label>
+            <select name="role" class="form-select">
+              <option value="viewer">مشاهده‌گر</option>
+              <option value="operator" selected>اپراتور</option>
+              <option value="admin">مدیر</option>
+              <option value="superadmin">مدیر ارشد</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+          <button type="submit" class="btn btn-success">افزودن</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">تغییر رمز عبور</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <form method="post">
+        <input type="hidden" name="action" value="reset_password">
+        <input type="hidden" name="user_id" id="reset_uid">
+        <div class="modal-body">
+          <p class="text-muted small">کاربر: <span id="reset_uname" class="fw-bold"></span></p>
+          <label class="form-label">رمز عبور جدید</label>
+          <input type="password" name="new_password" class="form-control" required dir="ltr">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+          <button type="submit" class="btn btn-warning">تغییر رمز</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showResetModal(id, username) {
+  document.getElementById('reset_uid').value = id;
+  document.getElementById('reset_uname').textContent = username;
+  new bootstrap.Modal(document.getElementById('resetModal')).show();
+}
+</script>
+{% endblock %}

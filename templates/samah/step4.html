@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "step_wizard.html" import wizard %}
+{% block title %}تایید اطلاعات و پرداخت - سماح{% endblock %}
+{% block content %}
+{{ wizard(4) }}
+
+<div class="card mb-4">
+  <div class="card-header card-header-green">
+    <h5 class="mb-0"><i class="bi bi-check2-square me-2"></i>تایید اطلاعات ثبت نام</h5>
+  </div>
+  <div class="card-body p-4">
+    <div class="alert alert-warning border-0 mb-4" style="background:#fff8e1">
+      <i class="bi bi-exclamation-triangle me-2"></i>
+      لطفاً قبل از پرداخت، اطلاعات زیر را با دقت بررسی کنید. در صورت نیاز به ویرایش روی دکمه ویرایش کلیک کنید.
+    </div>
+
+    <!-- Group Info -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="card h-100 border-0 bg-light">
+          <div class="card-body">
+            <h6 class="text-success fw-bold mb-3"><i class="bi bi-map me-2"></i>اطلاعات سفر</h6>
+            <table class="table table-borderless table-sm mb-0">
+              <tr><td class="text-muted">مرز خروجی:</td><td class="fw-semibold">{{ group.exit_border.name_fa if group.exit_border else '—' }}</td></tr>
+              <tr><td class="text-muted">مرز ورودی:</td><td class="fw-semibold">{{ group.entry_border.name_fa if group.entry_border else '—' }}</td></tr>
+              <tr><td class="text-muted">تاریخ اعزام:</td><td class="fw-semibold">{{ group.departure_date }}</td></tr>
+              <tr><td class="text-muted">تاریخ بازگشت:</td><td class="fw-semibold">{{ group.return_date }}</td></tr>
+              <tr><td class="text-muted">وسیله رفت:</td><td class="fw-semibold">{{ {'personal':'شخصی','bus':'اتوبوس','minibus':'مینی بوس','taxi':'تاکسی','train':'قطار'}.get(group.transport_to_border,'—') }}</td></tr>
+              <tr><td class="text-muted">وسیله برگشت:</td><td class="fw-semibold">{{ {'personal':'شخصی','bus':'اتوبوس','minibus':'مینی بوس','taxi':'تاکسی','train':'قطار'}.get(group.transport_return,'—') }}</td></tr>
+              {% if plates %}
+              <tr><td class="text-muted">پلاک(ها):</td><td dir="ltr" class="fw-semibold">{{ plates|join(', ') }}</td></tr>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100 border-0 bg-light">
+          <div class="card-body">
+            <h6 class="text-success fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>اطلاعات محل سکونت</h6>
+            <table class="table table-borderless table-sm mb-0">
+              <tr><td class="text-muted">استان:</td><td class="fw-semibold">{{ group.province or '—' }}</td></tr>
+              <tr><td class="text-muted">شهر:</td><td class="fw-semibold">{{ group.city or '—' }}</td></tr>
+              <tr><td class="text-muted">کد پستی:</td><td class="fw-semibold" dir="ltr">{{ group.postal_code or '—' }}</td></tr>
+              <tr><td class="text-muted">آدرس:</td><td class="fw-semibold">{{ group.address or '—' }}</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <h6 class="text-success fw-bold mb-3"><i class="bi bi-people me-2"></i>اعضای گروه ({{ members|length }} نفر)</h6>
+    <div class="table-responsive mb-4">
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ردیف</th>
+            <th>نام و نام خانوادگی</th>
+            <th>کد ملی</th>
+            <th>تاریخ تولد</th>
+            <th>گذرنامه</th>
+            <th>بیمه</th>
+            <th>مبلغ (ریال)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="fw-semibold">
+              {{ m.full_name }}
+              {% if m.is_group_head %}<span class="badge bg-success ms-1">سرگروه</span>{% endif %}
+            </td>
+            <td dir="ltr">{{ m.national_id }}</td>
+            <td>{{ m.birth_date }}</td>
+            <td dir="ltr">{{ m.passport_letter }}{{ m.passport_number }}</td>
+            <td><span class="badge bg-success"><i class="bi bi-shield-check me-1"></i>بیمه</span></td>
+            <td class="fw-semibold">{{ '{:,}'.format(insurance_amount) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr class="table-success fw-bold">
+            <td colspan="6" class="text-end">جمع کل:</td>
+            <td>{{ '{:,}'.format(total) }} ریال</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Payment info -->
+    <div class="alert alert-success border-0 d-flex align-items-center gap-3 mb-4" style="background:#e8f5e9">
+      <i class="bi bi-credit-card fs-3 text-success"></i>
+      <div>
+        <div class="fw-bold">مبلغ قابل پرداخت: {{ '{:,}'.format(total) }} ریال</div>
+        <div class="small text-muted">شامل بیمه سفر برای {{ members|length }} نفر × {{ '{:,}'.format(insurance_amount) }} ریال</div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <a href="/samah/register/step1" class="btn btn-outline-secondary px-4">
+        <i class="bi bi-pencil me-2"></i>ویرایش اطلاعات
+      </a>
+      <form method="post">
+        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold">
+          <i class="bi bi-credit-card me-2"></i>پرداخت و تکمیل ثبت نام
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

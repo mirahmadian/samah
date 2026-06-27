@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% from "step_wizard.html" import wizard %}
+{% block title %}رسید ثبت نام - سماح{% endblock %}
+{% block extra_css %}
+@media print {
+  .no-print { display: none !important; }
+  .card { box-shadow: none !important; }
+  body { background: #fff; }
+}
+.pilgrim-card { border: 2px solid #1a6b3c; border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; }
+.pilgrim-card .reg-num { position: absolute; top: 12px; left: 12px; font-size: 11px; color: #888; }
+.qr-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+.qr-row img { width: 80px; height: 80px; border: 1px solid #ddd; border-radius: 6px; }
+{% endblock %}
+{% block content %}
+{{ wizard(5) }}
+
+<div class="alert alert-success border-0 d-flex align-items-center gap-3 mb-4" style="background:#e8f5e9">
+  <i class="bi bi-check-circle-fill fs-2 text-success"></i>
+  <div>
+    <div class="fw-bold fs-5">ثبت نام با موفقیت انجام شد!</div>
+    <div class="text-muted small">ثبت نام شما در سامانه سماح تأیید شد. رسید زیر را چاپ کرده و همراه داشته باشید.</div>
+  </div>
+</div>
+
+<!-- Print buttons -->
+<div class="d-flex gap-2 mb-4 no-print">
+  <button onclick="window.print()" class="btn btn-outline-primary">
+    <i class="bi bi-printer me-2"></i>چاپ رسید ثبت نام
+  </button>
+  <button onclick="printCards()" class="btn btn-outline-success">
+    <i class="bi bi-id-card me-2"></i>چاپ کارت شناسایی زائرین
+  </button>
+  <a href="/samah/" class="btn btn-outline-secondary ms-auto">
+    <i class="bi bi-house me-2"></i>صفحه اصلی
+  </a>
+</div>
+
+<!-- Receipt Header -->
+<div class="card mb-4">
+  <div class="card-header card-header-green text-center py-3">
+    <div class="d-flex align-items-center justify-content-center gap-3">
+      <div>
+        <div class="fw-bold fs-5">رسید ثبت نام سامانه سماح</div>
+        <div class="opacity-75 small">سازمان حج و زیارت جمهوری اسلامی ایران</div>
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-4">
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <div class="text-muted small">کد گروه</div>
+        <div class="fw-bold fs-5" dir="ltr">{{ group.group_code }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">مرجع پرداخت</div>
+        <div class="fw-bold" dir="ltr">{{ group.payment_ref }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">تاریخ پرداخت</div>
+        <div class="fw-bold">{{ group.payment_date.strftime('%Y/%m/%d %H:%M') if group.payment_date else '—' }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">مبلغ پرداختی</div>
+        <div class="fw-bold text-success">{{ '{:,}'.format(group.total_amount) }} ریال</div>
+      </div>
+    </div>
+    <hr>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="text-muted small">مرز خروجی</div>
+        <div class="fw-semibold">{{ group.exit_border.name_fa if group.exit_border else '—' }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">مرز ورودی</div>
+        <div class="fw-semibold">{{ group.entry_border.name_fa if group.entry_border else '—' }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">تاریخ اعزام</div>
+        <div class="fw-semibold">{{ group.departure_date }}</div>
+      </div>
+      <div class="col-md-3">
+        <div class="text-muted small">تاریخ بازگشت</div>
+        <div class="fw-semibold">{{ group.return_date }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Members with QR codes -->
+{% for pilgrim, qr_codes in members %}
+<div class="pilgrim-card">
+  <div class="reg-num">شماره ثبت: {{ pilgrim.registration_number }}</div>
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <div class="row g-2">
+        <div class="col-6">
+          <div class="text-muted small">نام و نام خانوادگی</div>
+          <div class="fw-bold fs-6">
+            {{ pilgrim.full_name }}
+            {% if pilgrim.is_group_head %}<span class="badge bg-success ms-1 small">سرگروه</span>{% endif %}
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">کد ملی</div>
+          <div class="fw-bold" dir="ltr">{{ pilgrim.national_id }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">نام پدر</div>
+          <div class="fw-semibold">{{ pilgrim.father_name }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">شماره شناسنامه</div>
+          <div class="fw-semibold" dir="ltr">{{ pilgrim.id_number }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">گذرنامه</div>
+          <div class="fw-semibold" dir="ltr">{{ pilgrim.passport_letter }}{{ pilgrim.passport_number }}</div>
+        </div>
+        <div class="col-6">
+          <div class="text-muted small">وضعیت بیمه</div>
+          <div><span class="badge bg-success"><i class="bi bi-shield-check me-1"></i>تأیید شده</span></div>
+        </div>
+        {% if pilgrim.payment_status == 'cancelled' %}
+        <div class="col-12">
+          <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>انصراف داده</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      {% if qr_codes %}
+      <div class="qr-row">
+        {% for qr in qr_codes %}
+        <img src="{{ qr }}" alt="QR {{ loop.index }}" title="بارکد {{ loop.index }}">
+        {% endfor %}
+      </div>
+      <div class="text-center text-muted" style="font-size:10px; margin-top:6px">
+        ۴ بارکد QR - یک ردیف A4 - روی وسایل بچسبانید
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if pilgrim.payment_status == 'paid' %}
+  <!-- Cancel option -->
+  <div class="mt-3 no-print">
+    <button class="btn btn-sm btn-outline-danger" onclick="toggleCancel({{ pilgrim.id }})">
+      <i class="bi bi-x-circle me-1"></i>انصراف این زائر
+    </button>
+    <div id="cancelForm_{{ pilgrim.id }}" style="display:none" class="mt-2">
+      <form method="post" action="/samah/cancel/{{ pilgrim.id }}">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label small">شماره شبا برای استرداد وجه</label>
+            <input type="text" name="iban" class="form-control" placeholder="IR" dir="ltr" required>
+            <div class="form-text small">شماره شبا باید به نام خود زائر باشد</div>
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('آیا مطمئن هستید؟ مبلغ پس از کسر ۱۰٪ خسارت واریز می‌شود.')">
+              تأیید انصراف
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCancel(id) {
+  const el = document.getElementById('cancelForm_' + id);
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+function printCards() {
+  const beforeTitle = document.title;
+  document.title = 'کارت شناسایی زائرین - سامانه سماح';
+  window.print();
+  document.title = beforeTitle;
+}
+</script>
+{% endblock %}

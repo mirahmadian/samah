@@ -1,0 +1,19 @@
+{% macro wizard(current_step) %}
+<div class="step-wizard mb-4">
+  {% set steps = [
+    (1, 'ثبت اطلاعات گروه'),
+    (2, 'انتخاب مرز و تاریخ سفر'),
+    (3, 'انتخاب وسیله نقلیه تا مرز'),
+    (4, 'تایید اطلاعات و پرداخت'),
+    (5, 'کد پیگیری و رسید ثبت نام'),
+  ] %}
+  {% for num, label in steps %}
+  <div class="step-item {{ 'done' if num < current_step else 'active' if num == current_step else '' }}">
+    <div class="step-circle">
+      {% if num < current_step %}<i class="bi bi-check-lg"></i>{% else %}{{ num }}{% endif %}
+    </div>
+    <div class="step-label">{{ label }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

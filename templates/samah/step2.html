@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from "step_wizard.html" import wizard %}
+{% block title %}انتخاب مرز و تاریخ سفر - سماح{% endblock %}
+{% block extra_css %}
+.border-chip { cursor:pointer; padding:10px 22px; border-radius:25px; border:2px solid #ddd; background:#fff; transition:all .2s; font-size:14px; display:inline-block; }
+.border-chip:hover { border-color:#1a6b3c; color:#1a6b3c; }
+.border-chip.selected { background:#1a6b3c; color:#fff; border-color:#1a6b3c; }
+.border-chip .check-icon { display:none; }
+.border-chip.selected .check-icon { display:inline; }
+.chart-container { position:relative; height:300px; }
+{% endblock %}
+{% block content %}
+{{ wizard(2) }}
+
+<div class="alert alert-warning border-0 d-flex align-items-start gap-2 mb-4" style="background:#fff3cd">
+  <i class="bi bi-exclamation-triangle-fill mt-1 text-warning flex-shrink-0"></i>
+  <div>
+    <strong>توجه:</strong> زائر عزیز شما می‌توانید زمان هایی با تردد کمتر را برای سفر خود انتخاب کنید.
+    نمودار زیر وضعیت تردد سال گذشته و ثبت‌نام‌های سال جاری را نشان می‌دهد.
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header card-header-green">
+    <h5 class="mb-0"><i class="bi bi-map me-2"></i>انتخاب مرز خروج و ورود</h5>
+  </div>
+  <div class="card-body p-4">
+    <form method="post" id="step2Form">
+
+      <!-- Exit Border -->
+      <div class="mb-4">
+        <label class="form-label fw-bold fs-6">انتخاب مرز خروج <span class="text-danger">*</span></label>
+        <div class="d-flex flex-wrap gap-2" id="exitBorders">
+          {% for b in borders if b.is_exit %}
+          <label class="border-chip {{ 'selected' if group.exit_border_id == b.id else '' }}" for="exit_{{ b.id }}">
+            <input type="radio" name="exit_border_id" id="exit_{{ b.id }}" value="{{ b.id }}"
+                   {{ 'checked' if group.exit_border_id == b.id else '' }} class="d-none" required>
+            <i class="bi bi-check-circle-fill check-icon me-1"></i>{{ b.name_fa }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Entry Border -->
+      <div class="mb-4">
+        <label class="form-label fw-bold fs-6">انتخاب مرز ورود <span class="text-danger">*</span></label>
+        <div class="d-flex flex-wrap gap-2" id="entryBorders">
+          {% for b in borders if b.is_entry %}
+          <label class="border-chip {{ 'selected' if group.entry_border_id == b.id else '' }}" for="entry_{{ b.id }}">
+            <input type="radio" name="entry_border_id" id="entry_{{ b.id }}" value="{{ b.id }}"
+                   {{ 'checked' if group.entry_border_id == b.id else '' }} class="d-none" required>
+            <i class="bi bi-check-circle-fill check-icon me-1"></i>{{ b.name_fa }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Traffic Chart -->
+      <div class="card bg-light border-0 mb-4">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-center gap-4 mb-3">
+            <div class="d-flex align-items-center gap-2"><span style="width:24px;height:3px;background:#555;display:inline-block;border-radius:2px"></span> نمودار تردد سال جاری</div>
+            <div class="d-flex align-items-center gap-2"><span style="width:24px;height:3px;background:#ffc107;display:inline-block;border-radius:2px;border-style:dashed"></span> نمودار تردد سال گذشته</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="trafficChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Travel Dates -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold">تاریخ خروج از مرز (اعزام) <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" name="departure_date" id="departure_date"
+                   placeholder="مثال: ۱۴۰۳/۰۴/۲۴"
+                   value="{{ group.departure_date or '' }}" required>
+            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+          </div>
+          {% if departure_start and departure_end %}
+          <div class="form-text">بازه مجاز: {{ departure_start }} تا {{ departure_end }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">تاریخ ورود به کشور (بازگشت) <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="text" class="form-control" name="return_date" id="return_date"
+                   placeholder="مثال: ۱۴۰۳/۰۴/۳۱"
+                   value="{{ group.return_date or '' }}" required>
+            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+          </div>
+          <div class="form-text">حداکثر مدت اقامت: {{ max_stay_days }} روز</div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="/samah/register/step1" class="btn btn-outline-secondary px-4">
+          <i class="bi bi-arrow-right me-2"></i>بازگشت
+        </a>
+        <button type="submit" class="btn btn-success px-5 fw-bold">
+          ادامه <i class="bi bi-arrow-left ms-2"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chip selection
+document.querySelectorAll('.border-chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const container = this.closest('#exitBorders, #entryBorders');
+    container.querySelectorAll('.border-chip').forEach(c => c.classList.remove('selected'));
+    this.classList.add('selected');
+    this.querySelector('input[type=radio]').checked = true;
+  });
+});
+
+// Traffic Chart
+const labels = {{ chart_labels|safe }};
+const currentData = {{ current_year_data|safe }};
+const lastData = {{ last_year_data|safe }};
+
+const maxCurrent = Math.max(...currentData);
+const colors = currentData.map(v => {
+  const ratio = v / maxCurrent;
+  if (ratio > 0.75) return 'rgba(220,53,69,0.75)';
+  if (ratio > 0.4) return 'rgba(253,126,20,0.75)';
+  return 'rgba(255,193,7,0.6)';
+});
+
+new Chart(document.getElementById('trafficChart'), {
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        type: 'bar',
+        label: 'ثبت‌نام سال جاری',
+        data: currentData,
+        backgroundColor: colors,
+        borderRadius: 4,
+        yAxisID: 'y',
+      },
+      {
+        type: 'line',
+        label: 'تردد سال گذشته',
+        data: lastData,
+        borderColor: '#333',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 2,
+        tension: 0.3,
+        borderDash: [5,3],
+        yAxisID: 'y',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { font: { size: 10 }, maxRotation: 45 } },
+      y: { beginAtZero: true, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } }
+    }
+  }
+});
+</script>
+{% endblock %}
