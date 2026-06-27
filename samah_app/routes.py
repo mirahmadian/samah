@@ -99,7 +99,7 @@ def generate_qr_codes(pilgrim, group):
         filename = f"{pilgrim.registration_number}_qr{i+1}.png"
         filepath = os.path.join(qr_dir, filename)
         img.save(filepath)
-        codes.append(f"/static/qrcodes/{filename}")
+        codes.append(f"/samah-static/qrcodes/{filename}")
 
     return codes
 

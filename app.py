@@ -5,7 +5,9 @@ from models import db, AdminUser, Border, SystemSetting
 
 
 def create_app():
-    app = Flask(__name__, static_folder='static', static_url_path='/static')
+    # Static is served under a unique prefix (/samah-static) so it never
+    # collides with another app's /static on the same nginx/server.
+    app = Flask(__name__, static_folder='static', static_url_path='/samah-static')
     app.config.from_object(Config)
 
     os.makedirs(app.config.get('UPLOAD_FOLDER', 'static/uploads'), exist_ok=True)
