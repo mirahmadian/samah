@@ -282,7 +282,8 @@ def _add_member(group, head_national_id, head_phone, max_group):
         return redirect(url_for('samah.step1'))
 
     # Check if already registered in another paid group
-    already = Pilgrim.query.filter_by(national_id=nid).join(PilgrimGroup).filter(
+    already = Pilgrim.query.filter_by(national_id=nid).join(
+        PilgrimGroup, Pilgrim.group_id == PilgrimGroup.id).filter(
         PilgrimGroup.status == 'paid').first()
     if already:
         flash('این کد ملی قبلاً در سامانه ثبت نام کرده است.', 'danger')
