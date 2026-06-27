@@ -1,6 +1,7 @@
 import json
 import os
 import io
+import re
 import random
 import string
 from datetime import datetime, date
@@ -118,8 +119,26 @@ def index():
     # if it has been downloaded; otherwise fall back to the built-in page.
     index_path = os.path.join(_landing_dir(), 'index.html')
     if os.path.exists(index_path):
-        return send_from_directory(_landing_dir(), 'index.html')
+        with open(index_path, encoding='utf-8') as f:
+            html = f.read()
+        return _inject_register_button(html)
     return render_template('landing.html')
+
+
+def _inject_register_button(html):
+    """Inject our own registration button next to the conditions section's
+    «اطلاعات بیشتر» button. The official mirrored page builds its own
+    register button via JS + an API we don't have, so we add ours here."""
+    # Drop any previously-injected button so placement stays consistent.
+    html = re.sub(r'<a id="btnSamahLogin".*?</a>', '', html, flags=re.DOTALL)
+    btn = ('<a id="btnSamahLogin" href="/samah/login" class="btn" '
+           'style="margin-top:30px;margin-left:10px;padding:8px 32px;border-radius:6px;'
+           'background:#1a6b3c;color:#fff;text-decoration:none;font-weight:bold;'
+           'display:inline-block">ثبت نام در سامانه</a>')
+    anchor = '<button type="button" class="btn btn-outline-secondary btnCondition"'
+    if anchor in html:
+        html = html.replace(anchor, btn + '\n' + anchor, 1)
+    return html
 
 
 @samah_bp.route('/assets/<path:filename>')

@@ -11,9 +11,10 @@
     :root { --sidebar-w: 240px; --primary: #1a3c28; --accent: #2a8f52; }
     body { font-family: 'Vazirmatn', Tahoma, sans-serif; font-size: 14px; background: #f4f6f9; }
     .sidebar {
-      width: var(--sidebar-w); min-height: 100vh; background: var(--primary);
+      width: var(--sidebar-w); height: 100vh; background: var(--primary);
       position: fixed; top: 0; right: 0; z-index: 100; padding-top: 0;
       box-shadow: -3px 0 15px rgba(0,0,0,.15);
+      overflow-y: auto; padding-bottom: 24px;
     }
     .sidebar-brand {
       padding: 20px 16px; background: rgba(0,0,0,.2); color: #fff;
